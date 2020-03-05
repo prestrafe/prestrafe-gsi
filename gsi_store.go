@@ -18,6 +18,8 @@ type Store interface {
 	Put(authToken string, gameState *GameState)
 	// Removes a game state for the given auth token, if one is present.
 	Remove(authToken string)
+	// Closes the store and releases all resources held by it.
+	Close()
 }
 
 type store struct {
@@ -66,4 +68,11 @@ func (s *store) Put(authToken string, gameState *GameState) {
 
 func (s *store) Remove(authToken string) {
 	s.internalCache.Delete(authToken)
+}
+
+func (s *store) Close() {
+	for _, channel := range s.channels {
+		close(channel)
+	}
+	s.channels = map[string]chan *GameState{}
 }
