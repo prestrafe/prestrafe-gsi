@@ -79,6 +79,8 @@ func (s *server) Start() error {
 
 func (s *server) Stop() error {
 	s.logger.Printf("Stopping GSI server on %s:%d\n", s.addr, s.port)
+
+	s.store.Close()
 	return s.httpServer.Shutdown(context.Background())
 }
 
