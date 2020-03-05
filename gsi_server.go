@@ -41,7 +41,7 @@ func NewServer(addr string, port, ttl int) Server {
 	return &server{
 		addr,
 		port,
-		log.New(os.Stdout, "GSI-Server", log.LstdFlags),
+		log.New(os.Stdout, "GSI-Server > ", log.LstdFlags),
 		NewStore(time.Duration(ttl) * time.Second),
 		nil,
 		nil,
