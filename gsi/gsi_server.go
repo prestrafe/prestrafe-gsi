@@ -164,7 +164,7 @@ func (s *server) handleWebsocket(writer http.ResponseWriter, request *http.Reque
 		return
 	}
 
-	channel := s.store.Channel(authToken)
+	channel := s.store.GetChannel(authToken)
 
 	for {
 		select {
@@ -174,6 +174,7 @@ func (s *server) handleWebsocket(writer http.ResponseWriter, request *http.Reque
 					s.logger.Printf("%s - Could not serialize game state %s: %s\n", request.RemoteAddr, authToken, ioError)
 				}
 				_ = conn.Close()
+				s.store.ReleaseChannel(authToken)
 				return
 			}
 		}
