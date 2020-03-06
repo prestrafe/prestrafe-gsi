@@ -16,7 +16,7 @@ func main() {
 	config := new(ServerConfig)
 	envconfig.MustProcess("gsi", config)
 
-	server := gsi.NewServer(config.Addr, config.Port, config.Ttl)
+	server := gsi.NewServer(config.Addr, config.Port, config.Ttl, &gsi.ToggleTokenFilter{Value: true})
 	if err := server.Start(); err != nil {
 		panic(err)
 	}
