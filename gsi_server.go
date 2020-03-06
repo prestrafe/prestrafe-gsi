@@ -50,8 +50,14 @@ func NewServer(addr string, port, ttl int) Server {
 
 func (s *server) Start() error {
 	router := mux.NewRouter()
-	router.Path("/").Methods("GET").HandlerFunc(s.handleGet)
-	router.Path("/").Methods("POST").HandlerFunc(s.handlePost)
+
+	// TODO I really want to change these routes, but I should wait until the web frontend is out and users need to
+	//  change their config anyways.
+	// router.Path("/").Methods("GET").HandlerFunc(s.handleGet)
+	// router.Path("/").Methods("POST").HandlerFunc(s.handlePost)
+
+	router.Path("/get").Methods("GET").HandlerFunc(s.handleGet)
+	router.Path("/update").Methods("POST").HandlerFunc(s.handlePost)
 	router.Path("/websocket").Methods("GET").HandlerFunc(s.handleWebsocket)
 	router.NotFoundHandler = http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		s.logger.Printf("Unmatched request: %s %s\n", request.Method, request.URL)
