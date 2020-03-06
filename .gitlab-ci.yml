@@ -1,0 +1,25 @@
+docker-build-master:
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker build --pull -t "registry.gitlab.com/prestrafe/$REPO_NAME" .
+    - docker push "registry.gitlab.com/prestrafe/$REPO_NAME"
+  only:
+    - master
+
+docker-build:
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker build --pull -t "registry.gitlab.com/prestrafe/$REPO_NAME:$CI_COMMIT_REF_SLUG" .
+    - docker push "registry.gitlab.com/prestrafe/$REPO_NAME:$CI_COMMIT_REF_SLUG"
+  except:
+    - master
