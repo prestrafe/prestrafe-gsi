@@ -29,6 +29,7 @@ type Server interface {
 type server struct {
 	addr       string
 	port       int
+	filter     TokenFilter
 	logger     *log.Logger
 	store      Store
 	httpServer *http.Server
@@ -37,10 +38,11 @@ type server struct {
 
 // Creates a new GSI server, listening on a given address and port. The TTL controls for how long game states should be
 // kept, until they are considered stale.
-func NewServer(addr string, port, ttl int) Server {
+func NewServer(addr string, port, ttl int, filter TokenFilter) Server {
 	return &server{
 		addr,
 		port,
+		filter,
 		log.New(os.Stdout, "GSI-Server > ", log.LstdFlags),
 		NewStore(time.Duration(ttl) * time.Second),
 		nil,
@@ -92,12 +94,18 @@ func (s *server) Stop() error {
 
 func (s *server) handleGet(writer http.ResponseWriter, request *http.Request) {
 	if !strings.HasPrefix(request.Header.Get("Authorization"), "GSI ") {
-		s.logger.Printf("%s - Unauthorized GSI read\n", request.RemoteAddr)
+		s.logger.Printf("%s - Unauthorized GSI read (no token)\n", request.RemoteAddr)
 		writer.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	authToken := request.Header.Get("Authorization")[4:]
+	if !s.filter.Accept(authToken) {
+		s.logger.Printf("%s - Unauthorized GSI read (rejected token)\n", request.RemoteAddr)
+		writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	gameState, hasGameState := s.store.Get(authToken)
 	if !hasGameState {
 		s.logger.Printf("%s - Unknown GSI read to %s\n", request.RemoteAddr, authToken)
@@ -140,6 +148,12 @@ func (s *server) handlePost(writer http.ResponseWriter, request *http.Request) {
 	authToken := gameState.Auth.Token
 	gameState.Auth = nil
 
+	if !s.filter.Accept(authToken) {
+		s.logger.Printf("%s - Unauthorized GSI read (rejected token)\n", request.RemoteAddr)
+		writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	if gameState.Provider != nil {
 		s.store.Put(authToken, gameState)
 	} else {
@@ -152,7 +166,13 @@ func (s *server) handlePost(writer http.ResponseWriter, request *http.Request) {
 func (s *server) handleWebsocket(writer http.ResponseWriter, request *http.Request) {
 	authToken := request.Header.Get("Sec-WebSocket-Protocol")
 	if authToken == "" {
-		s.logger.Printf("%s - Unauthorized GSI websocket read\n", request.RemoteAddr)
+		s.logger.Printf("%s - Unauthorized GSI websocket read (no token)\n", request.RemoteAddr)
+		writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	if !s.filter.Accept(authToken) {
+		s.logger.Printf("%s - Unauthorized GSI read (rejected token)\n", request.RemoteAddr)
 		writer.WriteHeader(http.StatusUnauthorized)
 		return
 	}
