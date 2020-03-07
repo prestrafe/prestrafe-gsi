@@ -6,7 +6,7 @@ go-test:
   image: golang:alpine
   stage: test
   script:
-    - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go test -short
+    - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go test -short $(go list ./... | grep -v /vendor/)
 
 docker-deploy:
   image: docker:latest
