@@ -7,13 +7,13 @@ go-lint:
   image: golang:alpine
   stage: lint
   script:
-    - RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 golint -set_exit_status
+    - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 golint -set_exit_status
 
 go-test:
   image: golang:alpine
   stage: test
   script:
-    - RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go test -short
+    - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go test -short
 
 docker-deploy:
   image: docker:latest
