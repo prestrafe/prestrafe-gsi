@@ -7,7 +7,7 @@ go-lint:
   image: golang:alpine
   stage: lint
   before_script:
-    - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go get -u github.com/golang/lint/golint
+    - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go get -u golang.org/x/lint
   script:
     - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 golint -set_exit_status
 
