@@ -1,4 +1,4 @@
-package gsi
+package server
 
 // Defines an API for token filters. A token filter decides, if a given auth token is acceptable for the server or if it
 // should rather be rejected. The goal of a token filter is not syntax validation, but rather enforcing security

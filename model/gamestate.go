@@ -1,4 +1,4 @@
-package gsi
+package model
 
 type GameState struct {
 	Auth     *AuthState     `json:"auth"`
