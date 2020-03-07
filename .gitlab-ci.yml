@@ -6,8 +6,12 @@ stages:
 go-lint:
   image: golang:alpine
   stage: lint
+  before_script:
+    - export CGO_ENABLED=0
+    - export GOOS=linux GOARCH=amd64
+    - export PATH=$PATH:$GOPATH/bin
+    - go get golang.org/x/lint
   script:
-    - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go get -u golang.org/x/lint
     - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 golint -set_exit_status
 
 go-test:
