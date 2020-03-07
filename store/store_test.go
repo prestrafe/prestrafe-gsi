@@ -17,14 +17,28 @@ func TestStoring(t *testing.T) {
 	assert.True(t, present)
 	assert.NotNil(t, gameState)
 
-	time.Sleep(15 * time.Millisecond)
+	time.Sleep(20 * time.Millisecond)
 
 	gameState, present = store.Get("token")
 	assert.False(t, present)
 	assert.Nil(t, gameState)
 }
 
-func TestChannelTimeoutAndRelease(t *testing.T) {
+func TestChannelStoreRemove(t *testing.T) {
+	store := newStore(15 * time.Minute)
+	store.Put("token", &model.GameState{})
+
+	channel := store.GetChannel("token")
+	assert.NotNil(t, channel)
+
+	assertChannel(t, channel, true, true)
+	store.Remove("token")
+	assertChannel(t, channel, false, true)
+	store.ReleaseChannel("token")
+	assertChannel(t, channel, false, false)
+}
+
+func TestChannelStoreTimeout(t *testing.T) {
 	store := newStore(15 * time.Millisecond)
 	store.Put("token", &model.GameState{})
 
@@ -32,7 +46,7 @@ func TestChannelTimeoutAndRelease(t *testing.T) {
 	assert.NotNil(t, channel)
 
 	assertChannel(t, channel, true, true)
-	time.Sleep(15 * time.Millisecond)
+	time.Sleep(20 * time.Millisecond)
 	assertChannel(t, channel, false, true)
 	store.ReleaseChannel("token")
 	assertChannel(t, channel, false, false)
