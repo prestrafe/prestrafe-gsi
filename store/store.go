@@ -1,4 +1,4 @@
-package gsi
+package store
 
 import (
 	"reflect"
@@ -6,6 +6,12 @@ import (
 	"time"
 
 	"github.com/patrickmn/go-cache"
+
+	"gitlab.com/prestrafe/prestrafe-gsi/model"
+)
+
+const (
+	channelBufferSize = 10
 )
 
 // Defines the public API for the GSI store. The store is responsible for saving game states and evicting them once they
@@ -13,14 +19,14 @@ import (
 type Store interface {
 	// Returns a channel that is filled with updates of the game state for the given auth token. Calling this method
 	// also means that the caller needs to call ReleaseChannel(authToken), once he is done with using the channel.
-	GetChannel(authToken string) chan *GameState
+	GetChannel(authToken string) chan *model.GameState
 	// Releases a channel that was previously acquired by GetChannel(authToken).
 	ReleaseChannel(authToken string)
 	// Returns a game state for the given auth token, if one is present.
-	Get(authToken string) (gameState *GameState, present bool)
-	// Puts a new game state for the given auth token, if none is already present. Otherwise the existing game state
+	Get(authToken string) (gameState *model.GameState, present bool)
+	// Puts a newStore game state for the given auth token, if none is already present. Otherwise the existing game state
 	// will be updated with the passed one.
-	Put(authToken string, gameState *GameState)
+	Put(authToken string, gameState *model.GameState)
 	// Removes a game state for the given auth token, if one is present.
 	Remove(authToken string)
 	// Closes the store and releases all resources held by it.
@@ -34,12 +40,16 @@ type store struct {
 }
 
 type channelContainer struct {
-	channel chan *GameState
+	channel chan *model.GameState
 	clients int
 }
 
-// Creates a new GSI store, with a given TTL. The TTL is the duration for game states, before they are considered stale.
-func NewStore(ttl time.Duration) Store {
+// Creates a newStore GSI store, with a given TTL. The TTL is the duration for game states, before they are considered stale.
+func New(ttl time.Duration) Store {
+	return newStore(ttl)
+}
+
+func newStore(ttl time.Duration) *store {
 	internalCache := cache.New(ttl, ttl*10)
 	channels := make(map[string]*channelContainer)
 	store := &store{channels, internalCache, &sync.Mutex{}}
@@ -51,13 +61,13 @@ func NewStore(ttl time.Duration) Store {
 	return store
 }
 
-func (s *store) GetChannel(authToken string) chan *GameState {
+func (s *store) GetChannel(authToken string) chan *model.GameState {
 	s.locker.Lock()
 
 	if _, present := s.channels[authToken]; !present {
 		gameState, _ := s.Get(authToken)
 
-		s.channels[authToken] = &channelContainer{make(chan *GameState), 0}
+		s.channels[authToken] = &channelContainer{make(chan *model.GameState, channelBufferSize), 0}
 		s.channels[authToken].channel <- gameState
 	}
 
@@ -85,15 +95,15 @@ func (s *store) ReleaseChannel(authToken string) {
 	}
 }
 
-func (s *store) Get(authToken string) (gameState *GameState, present bool) {
+func (s *store) Get(authToken string) (gameState *model.GameState, present bool) {
 	if cached, isCached := s.internalCache.Get(authToken); isCached {
-		gameState = cached.(*GameState)
+		gameState = cached.(*model.GameState)
 		present = isCached
 	}
 	return
 }
 
-func (s *store) Put(authToken string, gameState *GameState) {
+func (s *store) Put(authToken string, gameState *model.GameState) {
 	previousGameState, _ := s.internalCache.Get(authToken)
 	s.internalCache.Set(authToken, gameState, cache.DefaultExpiration)
 
@@ -113,7 +123,7 @@ func (s *store) Close() {
 	}
 }
 
-func (s *store) pushUpdate(authToken string, gameState *GameState) {
+func (s *store) pushUpdate(authToken string, gameState *model.GameState) {
 	if _, present := s.channels[authToken]; present {
 		s.locker.Lock()
 

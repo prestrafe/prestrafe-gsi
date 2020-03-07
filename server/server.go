@@ -1,4 +1,4 @@
-package gsi
+package server
 
 import (
 	"context"
@@ -13,6 +13,9 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+
+	"gitlab.com/prestrafe/prestrafe-gsi/model"
+	"gitlab.com/prestrafe/prestrafe-gsi/store"
 )
 
 // Defines the public API for the Game State Integration server. The server acts as a rely between the CSGO GSI API,
@@ -31,20 +34,20 @@ type server struct {
 	port       int
 	filter     TokenFilter
 	logger     *log.Logger
-	store      Store
+	store      store.Store
 	httpServer *http.Server
 	upgrader   *websocket.Upgrader
 }
 
 // Creates a new GSI server, listening on a given address and port. The TTL controls for how long game states should be
 // kept, until they are considered stale.
-func NewServer(addr string, port, ttl int, filter TokenFilter) Server {
+func New(addr string, port, ttl int, filter TokenFilter) Server {
 	return &server{
 		addr,
 		port,
 		filter,
 		log.New(os.Stdout, "GSI-Server > ", log.LstdFlags),
-		NewStore(time.Duration(ttl) * time.Second),
+		store.New(time.Duration(ttl) * time.Second),
 		nil,
 		nil,
 	}
@@ -138,7 +141,7 @@ func (s *server) handlePost(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	gameState := new(GameState)
+	gameState := new(model.GameState)
 	if jsonError := json.Unmarshal(body, gameState); jsonError != nil {
 		s.logger.Printf("%s - Could not de-serialize game state: %s\n", request.RemoteAddr, jsonError)
 		writer.WriteHeader(http.StatusBadRequest)

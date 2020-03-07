@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/kelseyhightower/envconfig"
 
-	"gitlab.com/prestrafe/prestrafe-gsi/gsi"
+	"gitlab.com/prestrafe/prestrafe-gsi/server"
 )
 
 type ServerConfig struct {
@@ -16,8 +16,8 @@ func main() {
 	config := new(ServerConfig)
 	envconfig.MustProcess("gsi", config)
 
-	server := gsi.NewServer(config.Addr, config.Port, config.Ttl, &gsi.ToggleTokenFilter{Value: true})
-	if err := server.Start(); err != nil {
+	gsiServer := server.New(config.Addr, config.Port, config.Ttl, &server.ToggleTokenFilter{Value: true})
+	if err := gsiServer.Start(); err != nil {
 		panic(err)
 	}
 }
