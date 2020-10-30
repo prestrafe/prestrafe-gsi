@@ -180,7 +180,9 @@ func (s *server) handleWebsocket(writer http.ResponseWriter, request *http.Reque
 		return
 	}
 
-	conn, upgradeError := s.upgrader.Upgrade(writer, request, nil)
+	conn, upgradeError := s.upgrader.Upgrade(writer, request, http.Header{
+		"Sec-Websocket-Protocol": []string{authToken},
+	})
 	if upgradeError != nil {
 		s.logger.Printf("%s - Could not upgrade websocket connection on %s: %s\n", request.RemoteAddr, authToken, upgradeError)
 		_ = conn.Close()
