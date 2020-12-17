@@ -148,6 +148,12 @@ func (s *server) handlePost(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	if gameState.Auth == nil {
+		s.logger.Printf("%s - Game state did not contain auth information\n", request.RemoteAddr)
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	authToken := gameState.Auth.Token
 	gameState.Auth = nil
 
