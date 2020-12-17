@@ -169,7 +169,6 @@ func (s *server) handlePost(writer http.ResponseWriter, request *http.Request) {
 		s.store.Remove(authToken)
 	}
 
-	s.logger.Println("UPDATED GSI FOR", authToken)
 	writer.WriteHeader(http.StatusOK)
 }
 
