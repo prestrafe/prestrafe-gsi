@@ -7,7 +7,7 @@ import (
 )
 
 type ServerConfig struct {
-	Addr string `default:"0.0.0.0"`
+	Addr string `default:""`
 	Port int    `default:"8080"`
 	Ttl  int    `default:"15"`
 }
