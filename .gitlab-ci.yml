@@ -30,7 +30,8 @@ image-deploy:
     - apk add --no-cache git curl bash
     - curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
     - cd deployment
-    - kustomize edit set image prestrafe-gsi=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - ./kustomize edit set image prestrafe-gsi=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - rm kustomize
     - cd ..
     - git add deployment/kustomization.yaml
     - git commit -m "Deploy revision $CI_COMMIT_SHORT_SHA via kustomize"
