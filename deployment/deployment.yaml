@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: gsi
-          image: prestrafe-gsi:latest
+          image: prestrafe-gsi
           env:
             - name: GSI_ADDR
               value: 0.0.0.0
