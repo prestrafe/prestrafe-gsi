@@ -24,7 +24,7 @@ image-build:
 
 image-deploy:
   image:
-    name: kubectl:latest
+    name: k8s.gcr.io/kustomize/kustomize:v3.8.7
     entrypoint: [ "" ]
   stage: deploy
   script:
