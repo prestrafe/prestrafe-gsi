@@ -3,6 +3,7 @@ kind: Kustomization
 
 images:
   - name: prestrafe-gsi:latest
+    newName: prestrafe-gsi
     newTag: commit
 
 resources:
