@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prestrafe-gsi
+spec:
+  selector:
+    matchLabels:
+      app: prestrafe-gsi
+  template:
+    metadata:
+      labels:
+        app: prestrafe-gsi
+    spec:
+      containers:
+        - name: gsi
+          image: prestrafe-gsi:latest
+          env:
+            - name: GSI_ADDR
+              value: 0.0.0.0
+            - name: GSI_PORT
+              value: "8337"
+            - value: GSI_TTL
+              name: "12"
+          ports:
+            - name: http-gsi
+              containerPort: 8337
+              protocol: TCP

@@ -1,5 +1,6 @@
 stages:
   - test
+  - build
   - deploy
 
 go-test:
@@ -8,15 +9,30 @@ go-test:
   script:
     - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go test -short $(go list ./... | grep -v /vendor/)
 
-docker-deploy:
+image-build:
   image: docker:latest
-  stage: deploy
+  stage: build
   services:
     - docker:dind
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
-    - docker build --pull -t "$CI_REGISTRY_IMAGE" .
-    - docker push "$CI_REGISTRY_IMAGE"
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
   only:
     - master
+
+image-deploy:
+  image:
+    name: kubectl:latest
+    entrypoint: [ "" ]
+  stage: deploy
+  tags:
+    - privileged
+  script:
+    - cd deployment
+    - kustomize edit set image prestrafe-gsi=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - cd ..
+    - git add deployment/kustomization.yaml
+    - git commit -m "Deploy revision $CI_COMMIT_SHORT_SHA via kustomize"
+    - git push -u origin $CI_COMMIT_BRANCH
