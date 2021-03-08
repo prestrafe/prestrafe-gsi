@@ -27,7 +27,7 @@ image-deploy:
     name: alpine:latest
   stage: deploy
   before_script:
-    - apk add --no-cache git openssl-client curl bash
+    - apk add --no-cache git openssh-client curl bash
 
     - ssh-keyscan -t rsa gitlab.com >> ~/.ssh/known_hosts
 
