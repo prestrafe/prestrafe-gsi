@@ -6,6 +6,11 @@ stages:
 go-test:
   image: golang:alpine
   stage: test
+  rules:
+    - changes:
+        - deployment/**/*
+      when: never
+    - when: always
   script:
     - export CGO_ENABLED=0
     - export GOOS=linux
@@ -18,6 +23,11 @@ image-build:
   stage: build
   needs:
     - job: go-test
+  rules:
+    - changes:
+        - deployment/**/*
+      when: never
+    - when: always
   services:
     - docker:dind
   before_script:
@@ -36,7 +46,7 @@ image-deploy:
     - job: image-build
   rules:
     - changes:
-        - deployment/kustomization.yaml
+        - deployment/**/*
       when: never
     - when: always
   before_script:
