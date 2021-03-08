@@ -7,7 +7,11 @@ go-test:
   image: golang:alpine
   stage: test
   script:
-    - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go test -short $(go list ./... | grep -v /vendor/)
+    - export CGO_ENABLED=0
+    - export GOOS=linux
+    - export GOARCH=amd64
+    - go mod download
+    - go test -short $(go list ./... | grep -v /vendor/)
 
 image-build:
   image: docker:latest
