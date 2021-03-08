@@ -26,6 +26,11 @@ image-deploy:
   image:
     name: alpine:latest
   stage: deploy
+  rules:
+    - changes:
+        - deployment/kustomization.yaml
+      when: never
+    - when: always
   before_script:
     - apk add --no-cache git openssh-client curl bash
 
