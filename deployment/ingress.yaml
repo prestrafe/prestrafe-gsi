@@ -12,7 +12,8 @@ spec:
     - host: prestrafe.com
       http:
         paths:
-          - backend:
+          - path: /
+            backend:
               service:
                 name: prestrafe-gsi
                 port:
