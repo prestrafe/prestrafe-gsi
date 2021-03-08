@@ -19,3 +19,8 @@ spec:
                 name: prestrafe-gsi
                 port:
                   name: http-gsi
+  tls:
+    - secretName: tls-prestrafe-secret
+      hosts:
+        - prestrafe.com
+
