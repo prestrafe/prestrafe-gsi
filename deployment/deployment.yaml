@@ -21,8 +21,8 @@ spec:
               value: "8080"
             - name: GSI_METRICSPORT
               value: "9080"
-            - value: GSI_TTL
-              name: "12"
+            - name: GSI_TTL
+              value: "12"
           ports:
             - name: http-gsi
               containerPort: 8080
