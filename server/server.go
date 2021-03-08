@@ -13,7 +13,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
-
 	"gitlab.com/prestrafe/prestrafe-gsi/model"
 	"gitlab.com/prestrafe/prestrafe-gsi/store"
 )
