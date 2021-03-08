@@ -9,7 +9,8 @@ spec:
     - honorLabels: true
       targetPort: http-metrics
   namespaceSelector:
-    any: true
+    matchNames:
+      - prestrafe
   selector:
     matchLabels:
       app: prestrafe-gsi
