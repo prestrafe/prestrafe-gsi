@@ -4,7 +4,7 @@ kind: Kustomization
 images:
 - name: prestrafe-gsi
   newName: registry.gitlab.com/prestrafe-twitchbot/prestrafe-gsi
-  newTag: 39ba8231
+  newTag: f8a39923
 - name: prestrafe-gsi:latest
   newName: prestrafe-gsi
   newTag: commit
