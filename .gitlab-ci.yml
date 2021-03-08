@@ -38,6 +38,7 @@ image-deploy:
     - changes:
         - deployment/**/*
       when: never
+    - when: always
   before_script:
     - apk add --no-cache git openssh-client curl bash
 
