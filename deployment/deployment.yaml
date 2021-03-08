@@ -30,3 +30,5 @@ spec:
             - name: http-metrics
               containerPort: 9080
               protocol: TCP
+      imagePullSecrets:
+        - name: prestrafe-imagepull-secret
