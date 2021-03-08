@@ -34,6 +34,8 @@ image-deploy:
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
 
+    - ssh-keyscan -t rsa gitlab.com >> ~/.ssh/known_hosts
+
     - git config user.name "$GITLAB_USER_NAME"
     - git config user.email "$GITLAB_USER_EMAIL"
     - git remote set-url origin git@gitlab.com:${CI_PROJECT_PATH_SLUG}.git
