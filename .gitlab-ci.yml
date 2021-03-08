@@ -16,6 +16,8 @@ go-test:
 image-build:
   image: docker:latest
   stage: build
+  needs:
+    - job: go-test
   services:
     - docker:dind
   before_script:
@@ -30,6 +32,8 @@ image-deploy:
   image:
     name: alpine:latest
   stage: deploy
+  needs:
+    - job: image-build
   rules:
     - changes:
         - deployment/kustomization.yaml
