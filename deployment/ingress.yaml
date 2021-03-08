@@ -6,13 +6,13 @@ metadata:
     kubernetes.io/ingress.class: "nginx"
     kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/rewrite-target: /twitchbot
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
     - host: prestrafe.com
       http:
         paths:
-          - path: /
+          - path: /twitchbot(/|$)(.*)
             backend:
               service:
                 name: prestrafe-gsi
