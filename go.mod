@@ -7,5 +7,6 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/prometheus/client_golang v1.9.0 // indirect
 	github.com/stretchr/testify v1.5.1
 )
