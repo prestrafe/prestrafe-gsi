@@ -7,5 +7,8 @@ spec:
     - port: 8080
       targetPort: http-gsi
       protocol: TCP
+    - port: 9080
+      targetPort: http-metrics
+      protocol: TCP
   selector:
     app: prestrafe-gsi

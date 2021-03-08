@@ -18,10 +18,15 @@ spec:
             - name: GSI_ADDR
               value: 0.0.0.0
             - name: GSI_PORT
-              value: "8337"
+              value: "8080"
+            - name: GSI_METRICSPORT
+              value: "9080"
             - value: GSI_TTL
               name: "12"
           ports:
             - name: http-gsi
-              containerPort: 8337
+              containerPort: 8080
+              protocol: TCP
+            - name: http-metrics
+              containerPort: 9080
               protocol: TCP
