@@ -31,4 +31,4 @@ spec:
               containerPort: 9080
               protocol: TCP
       imagePullSecrets:
-        - name: prestrafe-imagepull-secret
+        - name: prestrafe-bot-imagepull-secret
