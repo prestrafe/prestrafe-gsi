@@ -7,6 +7,7 @@ images:
     newTag: 4410da2f
 
 resources:
+  - imagepullsecret-sealed.yaml
   - deployment.yaml
   - service.yaml
   - servicemonitor.yaml
