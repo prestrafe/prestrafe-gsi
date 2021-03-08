@@ -29,6 +29,7 @@ image-deploy:
   before_script:
     - apk add --no-cache git openssh-client curl bash
 
+    - mkdir -p ~/.ssh
     - ssh-keyscan -t rsa gitlab.com >> ~/.ssh/known_hosts
 
     - git config user.name "$GITLAB_USER_NAME"
