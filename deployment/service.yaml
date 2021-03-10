@@ -4,12 +4,10 @@ metadata:
   name: prestrafe-gsi
 spec:
   ports:
-    - name: http-gsi
-      port: 8080
+    - port: 8080
       targetPort: http-gsi
       protocol: TCP
-    - name: http-metrics
-      port: 9080
+    - port: 9080
       targetPort: http-metrics
       protocol: TCP
   selector:
