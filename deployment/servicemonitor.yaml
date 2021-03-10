@@ -1,7 +1,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: prestrafe-gsi
+  name: gsi
 spec:
   endpoints:
     - honorLabels: true

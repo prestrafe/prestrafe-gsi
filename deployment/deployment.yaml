@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: prestrafe-gsi
+  name: gsi
 spec:
   selector:
     matchLabels:
@@ -31,4 +31,4 @@ spec:
               containerPort: 9080
               protocol: TCP
       imagePullSecrets:
-        - name: prestrafe-gsi-imagepull-secret
+        - name: gsi-imagepull-secret
