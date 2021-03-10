@@ -1,10 +1,18 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-images:
-  - name: prestrafe-gsi
-    newName: registry.gitlab.com/prestrafe-twitchbot/prestrafe-gsi
-    newTag: ec0f1cd8
+namePrefix: prestrafe-
+
+configurations:
+  - kustomize-configurations/servicemonitor.yaml
+  - kustomize-configurations/sealedsecret.yaml
+
+resources:
+  - imagepullsecret-sealed.yaml
+  - deployment.yaml
+  - service.yaml
+  - servicemonitor.yaml
+  - ingress.yaml
 
 commonLabels:
   app.kubernetes.io/name: prestrafe-bgsi
@@ -13,9 +21,7 @@ commonLabels:
   app.kubernetes.io/component: gsi
   app.kubernetes.io/managed-by: Kustomize
 
-resources:
-  - imagepullsecret-sealed.yaml
-  - deployment.yaml
-  - service.yaml
-  - servicemonitor.yaml
-  - ingress.yaml
+images:
+  - name: prestrafe-gsi
+    newName: registry.gitlab.com/prestrafe-twitchbot/prestrafe-gsi
+    newTag: ec0f1cd8
