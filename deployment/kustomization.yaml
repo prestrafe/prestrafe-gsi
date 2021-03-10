@@ -15,7 +15,7 @@ resources:
   - ingress.yaml
 
 commonLabels:
-  app.kubernetes.io/name: prestrafe-bgsi
+  app.kubernetes.io/name: prestrafe-gsi
   app.kubernetes.io/version: master
   app.kubernetes.io/part-of: prestrafe
   app.kubernetes.io/component: gsi
