@@ -4,24 +4,24 @@ kind: Kustomization
 namePrefix: prestrafe-
 
 configurations:
-  - kustomize-configurations/servicemonitor.yaml
-  - kustomize-configurations/sealedsecret.yaml
+- kustomize-configurations/servicemonitor.yaml
+- kustomize-configurations/sealedsecret.yaml
 
 resources:
-  - imagepullsecret-sealed.yaml
-  - deployment.yaml
-  - service.yaml
-  - servicemonitor.yaml
-  - ingress.yaml
+- imagepullsecret-sealed.yaml
+- deployment.yaml
+- service.yaml
+- servicemonitor.yaml
+- ingress.yaml
 
 commonLabels:
-  app.kubernetes.io/name: prestrafe-gsi
-  app.kubernetes.io/version: master
-  app.kubernetes.io/part-of: prestrafe
   app.kubernetes.io/component: gsi
   app.kubernetes.io/managed-by: Kustomize
+  app.kubernetes.io/name: prestrafe-gsi
+  app.kubernetes.io/part-of: prestrafe
+  app.kubernetes.io/version: master
 
 images:
-  - name: prestrafe-gsi
-    newName: registry.gitlab.com/prestrafe-twitchbot/prestrafe-gsi
-    newTag: ec0f1cd8
+- name: prestrafe-gsi
+  newName: registry.gitlab.com/prestrafe-twitchbot/prestrafe-gsi
+  newTag: 350c4326
