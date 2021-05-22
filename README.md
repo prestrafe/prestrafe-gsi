@@ -14,7 +14,7 @@ To make your CSGO game send actual data to the GSI backend, you need create the 
 ```
 "Prestrafe Bot Game Integration Configuration (Development)"
 {
-    "uri" "http://localhost:8080/twitchbot/update"
+    "uri" "http://localhost:8080/update"
     "timeout" "1.0"
     "buffer" "0.1"
     "throttle" "2.5"
