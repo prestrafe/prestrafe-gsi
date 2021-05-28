@@ -142,7 +142,11 @@ func (s *server) handlePost(writer http.ResponseWriter, request *http.Request) {
 
 	gameState := new(model.GameState)
 	if jsonError := json.Unmarshal(body, gameState); jsonError != nil {
-		s.logger.Printf("%s - Could not de-serialize game state: %s\n", request.RemoteAddr, jsonError)
+		if jsonError.Error() != "json: cannot unmarshal bool into Go struct field GameState.previously.map of type model.MapState" {
+			// Upon map change, instead of returning a map object the GSI client return a bool.
+			// It's not necessary to log this error; we send 400 anyway to mark that the game state is not updated.
+			s.logger.Printf("%s - Could not de-serialize game state: %s\n", request.RemoteAddr, jsonError)
+		}
 		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
