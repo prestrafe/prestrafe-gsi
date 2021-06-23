@@ -35,3 +35,7 @@ To make your CSGO game send actual data to the GSI backend, you need create the 
     }
 }
 ```
+
+## Deployment Trigger
+
+Number: 1
