@@ -117,12 +117,12 @@ jobs:
       - publish-image
     runs-on: ubuntu-latest
     steps:
-      - uses: imranismail/setup-kustomize@v1
-      - run: |
-          pwd
-          ls -al
-          cd deployment
-
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - name: Setup kustomizew
+        uses: imranismail/setup-kustomize@v1
+      - name: Update image version
+        run: |
           kustomize edit set image prestrafe-gsi=jangraefen/prestrafe-gsi:sha-${GITHUB_SHA}
 
           git add .
