@@ -73,9 +73,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v1
       - name: Run tests
-        run: go test -v -race ./...
+        run: go test -v -norace ./...
 
-  build-image:
+  publish-image:
     if: github.ref == 'refs/heads/master'
     needs:
       - build
@@ -110,3 +110,19 @@ jobs:
           tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
           push: true
+
+  deploy-image:
+    if: github.ref == 'refs/heads/master'
+    needs:
+      - publish-image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: imranismail/setup-kustomize@v1
+      - run: |
+          cd deployment
+
+          kustomize edit set image prestrafe-gsi=jangraefen/prestrafe-gsi:sha-${GITHUB_SHA}
+
+          git add .
+          git commit -m "Deploy revision ${GITHUB_SHA} via kustomize"
+          git push
