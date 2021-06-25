@@ -123,6 +123,8 @@ jobs:
         uses: imranismail/setup-kustomize@v1
       - name: Update image version
         run: |
+          cd deployment
+
           kustomize edit set image prestrafe-gsi=jangraefen/prestrafe-gsi:sha-${GITHUB_SHA}
 
           git add .
