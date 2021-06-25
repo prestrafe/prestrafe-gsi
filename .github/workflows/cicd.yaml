@@ -123,6 +123,8 @@ jobs:
         uses: imranismail/setup-kustomize@v1
       - name: Update image version
         run: |
+          git config --global user.name "GitOps Deployment User"
+          git config --global user.email "gitops@prestrafe.com"
           cd deployment
 
           kustomize edit set image prestrafe-gsi=jangraefen/prestrafe-gsi:sha-${GITHUB_SHA}
