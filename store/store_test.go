@@ -65,21 +65,17 @@ func TestChannelStoreClose(t *testing.T) {
 }
 
 func assertChannel(t *testing.T, channel chan *model.GameState, hasElement, hasMore bool) {
-	for {
-		element, more := <-channel
+	element, more := <-channel
 
-		if hasElement {
-			assert.NotNil(t, element)
-		} else {
-			assert.Nil(t, element)
-		}
+	if hasElement {
+		assert.NotNil(t, element)
+	} else {
+		assert.Nil(t, element)
+	}
 
-		if hasMore {
-			assert.True(t, more)
-		} else {
-			assert.False(t, more)
-		}
-
-		break
+	if hasMore {
+		assert.True(t, more)
+	} else {
+		assert.False(t, more)
 	}
 }
