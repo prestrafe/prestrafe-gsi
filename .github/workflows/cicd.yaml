@@ -119,6 +119,8 @@ jobs:
     steps:
       - uses: imranismail/setup-kustomize@v1
       - run: |
+          pwd
+          ls -al
           cd deployment
 
           kustomize edit set image prestrafe-gsi=jangraefen/prestrafe-gsi:sha-${GITHUB_SHA}
