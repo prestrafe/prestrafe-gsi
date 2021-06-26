@@ -131,3 +131,4 @@ jobs:
           author_name: Github Action Deployment
           author_email: gitops@prestrafe.com
           message: "Deploy revision ${GITHUB_SHA} via kustomize"
+          github_token: "${{ secrets.GITHUB_TOKEN }}"
