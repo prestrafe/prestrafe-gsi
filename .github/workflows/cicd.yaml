@@ -90,7 +90,8 @@ jobs:
         uses: crazy-max/ghaction-docker-meta@v1
         with:
           images: jangraefen/prestrafe-gsi
-          tag-sha: true
+          tags: |
+            type=ref,event=branch
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
@@ -124,11 +125,11 @@ jobs:
       - name: Update image version
         run: |
           cd deployment
-          kustomize edit set image prestrafe-gsi=jangraefen/prestrafe-gsi:sha-${GITHUB_SHA}
+          kustomize edit set image prestrafe-gsi=jangraefen/prestrafe-gsi:${GITHUB_SHA}
       - name: Commit and push image version
         uses: actions-js/push@master
         with:
           author_name: Github Action Deployment
           author_email: gitops@prestrafe.com
-          message: "Deploy revision ${GITHUB_SHA} via kustomize"
+          message: "Deploy revision ${{ GITHUB_SHA }} via kustomize"
           github_token: "${{ secrets.GITHUB_TOKEN }}"
