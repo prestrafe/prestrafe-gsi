@@ -24,4 +24,4 @@ commonLabels:
 images:
 - name: prestrafe-gsi
   newName: jangraefen/prestrafe-gsi
-  newTag: sha-762b5f8714ca81a7dc04f50b647009c5131c106f
+  newTag: 21f863
