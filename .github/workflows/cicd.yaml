@@ -123,12 +123,11 @@ jobs:
         uses: imranismail/setup-kustomize@v1
       - name: Update image version
         run: |
-          git config --global user.name "GitOps Deployment User"
-          git config --global user.email "gitops@prestrafe.com"
           cd deployment
-
           kustomize edit set image prestrafe-gsi=jangraefen/prestrafe-gsi:sha-${GITHUB_SHA}
-
-          git add .
-          git commit -m "Deploy revision ${GITHUB_SHA} via kustomize"
-          git push
+      - name: Commit and push image version
+        uses: actions-js/push@master
+        with:
+          author_name: Github Action Deployment
+          author_email: gitops@prestrafe.com
+          message: "Deploy revision ${GITHUB_SHA} via kustomize"
