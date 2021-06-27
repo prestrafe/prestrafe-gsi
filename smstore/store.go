@@ -21,11 +21,11 @@ var (
 		Namespace: "prestrafe",
 		Subsystem: "sm",
 		Name:      "operations",
-		Help:      "Counts the number of operations on the GSI backend per token",
+		Help:      "Counts the number of operations on the SM backend per token",
 	}, []string{"token", "operation"})
 )
 
-// Defines the public API for the GSI store. The store is responsible for saving game states and evicting them once they
+// Defines the public API for the SM store. The store is responsible for saving game states and evicting them once they
 // go stale. Additional the store provides a channel object, that can be used to get notified, if a game state updates.
 type Store interface {
 	// Returns a channel that is filled with updates of the game state for the given auth token. Calling this method
