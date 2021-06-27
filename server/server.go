@@ -276,16 +276,15 @@ func (s *server) handleWebsocket(writer http.ResponseWriter, request *http.Reque
 	channel := s.gsiStore.GetChannel(authToken)
 
 	for {
-		select {
-		case gameState, more := <-channel:
-			if ioError := conn.WriteJSON(gameState); ioError != nil || !more {
-				if ioError != nil {
-					s.logger.Printf("%s - Could not serialize game state %s: %s\n", request.RemoteAddr, authToken, ioError)
-				}
-				_ = conn.Close()
-				s.gsiStore.ReleaseChannel(authToken)
-				return
+		gameState, more := <-channel
+		if ioError := conn.WriteJSON(gameState); ioError != nil || !more {
+			if ioError != nil {
+				s.logger.Printf("%s - Could not serialize game state %s: %s\n", request.RemoteAddr, authToken, ioError)
 			}
+			_ = conn.Close()
+			s.gsiStore.ReleaseChannel(authToken)
+			return
 		}
+
 	}
 }
