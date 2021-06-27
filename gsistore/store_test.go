@@ -1,4 +1,4 @@
-package store
+package gsistore
 
 import (
 	"testing"
@@ -65,17 +65,20 @@ func TestChannelStoreClose(t *testing.T) {
 }
 
 func assertChannel(t *testing.T, channel chan *model.GameState, hasElement, hasMore bool) {
-	element, more := <-channel
+	select {
+	case element, more := <-channel:
+		if hasElement {
+			assert.NotNil(t, element)
+		} else {
+			assert.Nil(t, element)
+		}
 
-	if hasElement {
-		assert.NotNil(t, element)
-	} else {
-		assert.Nil(t, element)
-	}
+		if hasMore {
+			assert.True(t, more)
+		} else {
+			assert.False(t, more)
+		}
 
-	if hasMore {
-		assert.True(t, more)
-	} else {
-		assert.False(t, more)
+		break
 	}
 }

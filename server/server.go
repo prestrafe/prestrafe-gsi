@@ -13,9 +13,9 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
-
+	"gitlab.com/prestrafe/prestrafe-gsi/gsistore"
 	"gitlab.com/prestrafe/prestrafe-gsi/model"
-	"gitlab.com/prestrafe/prestrafe-gsi/store"
+	"gitlab.com/prestrafe/prestrafe-gsi/smstore"
 )
 
 // Defines the public API for the Game State Integration server. The server acts as a rely between the CSGO GSI API,
@@ -34,7 +34,8 @@ type server struct {
 	port       int
 	filter     TokenFilter
 	logger     *log.Logger
-	store      store.Store
+	gsiStore   gsistore.Store
+	smStore    smstore.Store
 	httpServer *http.Server
 	upgrader   *websocket.Upgrader
 }
@@ -47,7 +48,8 @@ func New(addr string, port, ttl int, filter TokenFilter) Server {
 		port,
 		filter,
 		log.New(os.Stdout, "GSI-Server > ", log.LstdFlags),
-		store.New(time.Duration(ttl) * time.Second),
+		gsistore.New(time.Duration(ttl) * time.Second),
+		smstore.New(time.Duration(ttl) * time.Second),
 		nil,
 		nil,
 	}
@@ -61,9 +63,15 @@ func (s *server) Start() error {
 	// router.Path("/").Methods("GET").HandlerFunc(s.handleGet)
 	// router.Path("/").Methods("POST").HandlerFunc(s.handlePost)
 
-	router.Path("/get").Methods("GET").HandlerFunc(s.handleGet)
-	router.Path("/update").Methods("POST").HandlerFunc(s.handlePost)
+	// GSI Handlers
+	router.Path("/gsi/get").Methods("GET").HandlerFunc(s.handleGSIGet)
+	router.Path("/gsi/update").Methods("POST").HandlerFunc(s.handleGSIPost)
+
 	router.Path("/websocket").Methods("GET").HandlerFunc(s.handleWebsocket)
+
+	// SM Handlers
+	router.Path("/sm/update").Methods("POST").HandlerFunc(s.handleServerPost)
+	router.Path("/sm/get").Methods("GET").HandlerFunc(s.handleServerGet)
 	router.NotFoundHandler = http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		s.logger.Printf("Unmatched request: %s %s\n", request.Method, request.URL)
 		writer.WriteHeader(http.StatusNotFound)
@@ -91,11 +99,12 @@ func (s *server) Start() error {
 func (s *server) Stop() error {
 	s.logger.Printf("Stopping GSI server on %s:%d\n", s.addr, s.port)
 
-	s.store.Close()
+	s.gsiStore.Close()
+	s.smStore.Close()
 	return s.httpServer.Shutdown(context.Background())
 }
 
-func (s *server) handleGet(writer http.ResponseWriter, request *http.Request) {
+func (s *server) handleGSIGet(writer http.ResponseWriter, request *http.Request) {
 	if !strings.HasPrefix(request.Header.Get("Authorization"), "GSI ") {
 		s.logger.Printf("%s - Unauthorized GSI read (no token)\n", request.RemoteAddr)
 		writer.WriteHeader(http.StatusUnauthorized)
@@ -109,7 +118,7 @@ func (s *server) handleGet(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	gameState, hasGameState := s.store.Get(authToken)
+	gameState, hasGameState := s.gsiStore.Get(authToken)
 	if !hasGameState {
 		s.logger.Printf("%s - Unknown GSI read to %s\n", request.RemoteAddr, authToken)
 		writer.WriteHeader(http.StatusNotFound)
@@ -133,7 +142,7 @@ func (s *server) handleGet(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func (s *server) handlePost(writer http.ResponseWriter, request *http.Request) {
+func (s *server) handleGSIPost(writer http.ResponseWriter, request *http.Request) {
 	body, ioError := ioutil.ReadAll(request.Body)
 	if ioError != nil || body == nil || len(body) <= 0 {
 		s.logger.Printf("%s - Empty GSI update received: %s\n", request.RemoteAddr, ioError)
@@ -143,7 +152,11 @@ func (s *server) handlePost(writer http.ResponseWriter, request *http.Request) {
 
 	gameState := new(model.GameState)
 	if jsonError := json.Unmarshal(body, gameState); jsonError != nil {
-		s.logger.Printf("%s - Could not de-serialize game state: %s\n", request.RemoteAddr, jsonError)
+		if jsonError.Error() != "json: cannot unmarshal bool into Go struct field GameState.previously.map of type model.MapState" {
+			// Upon map change, instead of returning a map object the GSI client return a bool.
+			// It's not necessary to log this error; we send 400 anyway to mark that the game state is not updated.
+			s.logger.Printf("%s - Could not de-serialize game state: %s\n", request.RemoteAddr, jsonError)
+		}
 		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -164,9 +177,74 @@ func (s *server) handlePost(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	if gameState.Provider != nil {
-		s.store.Put(authToken, gameState)
+		s.gsiStore.Put(authToken, gameState)
 	} else {
-		s.store.Remove(authToken)
+		s.gsiStore.Remove(authToken)
+	}
+
+	writer.WriteHeader(http.StatusOK)
+}
+
+func (s *server) handleServerGet(writer http.ResponseWriter, request *http.Request) {
+	if !strings.HasPrefix(request.Header.Get("Authorization"), "SM ") {
+		s.logger.Printf("%s - Unauthorized SM read (no token)\n", request.RemoteAddr)
+		writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	authToken := request.Header.Get("Authorization")[3:]
+	if !s.filter.Accept(authToken) {
+		s.logger.Printf("%s - Unauthorized SM read (rejected token)\n", request.RemoteAddr)
+		writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	fullPlayerState, hasFullPlayerState := s.smStore.Get(authToken)
+	if !hasFullPlayerState {
+		s.logger.Printf("%s - Unknown SM read to %s\n", request.RemoteAddr, authToken)
+		writer.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	response, jsonError := json.Marshal(fullPlayerState)
+	if jsonError != nil {
+		s.logger.Printf("%s - Could not serialize game state %s: %s\n", request.RemoteAddr, authToken, jsonError)
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(http.StatusOK)
+
+	if _, ioError := writer.Write(response); ioError != nil {
+		s.logger.Printf("%s - Could not write game state %s: %s\n", request.RemoteAddr, authToken, ioError)
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (s *server) handleServerPost(writer http.ResponseWriter, request *http.Request) {
+	body, ioError := ioutil.ReadAll(request.Body)
+	if ioError != nil || body == nil || len(body) <= 0 {
+		s.logger.Printf("%s - Empty SM update received: %s\n", request.RemoteAddr, ioError)
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	serverState := new(model.ServerState)
+	if jsonError := json.Unmarshal(body, serverState); jsonError != nil {
+		s.logger.Printf("%s - Could not de-serialize server state: %s\n", request.RemoteAddr, jsonError)
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	serverInfo := serverState.ServerInfo
+
+	playerInfos := serverState.PlayerInfo
+
+	for _, player := range playerInfos {
+		if player.AuthKey != "" {
+			s.smStore.Put(&serverInfo, &player)
+		}
 	}
 
 	writer.WriteHeader(http.StatusOK)
@@ -195,17 +273,19 @@ func (s *server) handleWebsocket(writer http.ResponseWriter, request *http.Reque
 		return
 	}
 
-	channel := s.store.GetChannel(authToken)
+	channel := s.gsiStore.GetChannel(authToken)
 
 	for {
-		gameState, more := <-channel
-		if ioError := conn.WriteJSON(gameState); ioError != nil || !more {
-			if ioError != nil {
-				s.logger.Printf("%s - Could not serialize game state %s: %s\n", request.RemoteAddr, authToken, ioError)
+		select {
+		case gameState, more := <-channel:
+			if ioError := conn.WriteJSON(gameState); ioError != nil || !more {
+				if ioError != nil {
+					s.logger.Printf("%s - Could not serialize game state %s: %s\n", request.RemoteAddr, authToken, ioError)
+				}
+				_ = conn.Close()
+				s.gsiStore.ReleaseChannel(authToken)
+				return
 			}
-			_ = conn.Close()
-			s.store.ReleaseChannel(authToken)
-			return
 		}
 	}
 }
