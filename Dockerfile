@@ -8,10 +8,6 @@ ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 
 # Build the application
 COPY go.* .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    --mount=type=cache,target=/go/pkg/mod \
-    go mod graph | awk '{if ($1 !~ "@") print $2}' | xargs -r go get
-
 RUN --mount=target=. \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
